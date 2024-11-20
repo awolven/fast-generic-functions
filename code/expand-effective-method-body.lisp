@@ -1,14 +1,15 @@
 (in-package #:fast-generic-functions)
 
+(sb-ext:without-package-locks
+  
 (defun expand-effective-method-body
     (effective-method generic-function lambda-list)
   (trivial-macroexpand-all:macroexpand-all
    `(let ((.gf. #',(generic-function-name generic-function)))
       (declare (ignorable .gf.))
-      #+sbcl(declare (sb-ext:disable-package-locks common-lisp:call-method))
-      #+sbcl(declare (sb-ext:disable-package-locks common-lisp:make-method))
-      #+sbcl(declare (sb-ext:disable-package-locks sb-pcl::check-applicable-keywords))
-      #+sbcl(declare (sb-ext:disable-package-locks sb-pcl::%no-primary-method))
+      #+SBCL(declare (sb-ext:disable-package-locks sb-pcl::check-applicable-keywords))
+      #+SBCL(declare (sb-ext:disable-package-locks sb-pcl::no-primary-method))
+      #+SBCL(declare (sb-ext:disable-package-locks cl::call-method))
       (macrolet
           (;; SBCL introduces explicit keyword argument checking into
            ;; the effective method.  Since we do our own checking, we
@@ -24,7 +25,7 @@
            ;; externalizable object.  Our solution is to replace it with
            ;; something portable.
            #+sbcl
-           (sb-pcl::%no-primary-method (&rest args)
+           (sb-pcl::no-primary-method (&rest args)
              (declare (ignore args))
              `(apply #'no-primary-method .gf. ,@',(lambda-list-apply-arguments lambda-list))))
         ,(wrap-in-call-method-macrolet
@@ -156,3 +157,4 @@
                           `(,value)
                           `(,value ,(keyword-info-suppliedp g-info))))))))))
 
+)
