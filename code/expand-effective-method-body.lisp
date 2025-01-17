@@ -1,6 +1,6 @@
 (in-package #:fast-generic-functions)
 
-(sb-ext:without-package-locks
+(#+SBCL sb-ext:without-package-locks #-sbcl progn
   
 (defun expand-effective-method-body
     (effective-method generic-function lambda-list)
